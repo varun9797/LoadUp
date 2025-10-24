@@ -1,0 +1,34 @@
+  version: '3.8'
+
+  services:
+    mongo_db:
+      image: mongo:6
+      container_name: mongodb_container
+      restart: always
+      ports:
+        - "27017:27017"
+      volumes:
+        - mongo-data:/data/db
+      networks:
+        - loadUp-network
+
+    # Node.js application service
+    node_server:
+      image: node_server:latest
+      container_name: node_server_container
+      ports: 
+        - "3000:3000"
+      depends_on:
+        - mongo_db
+      environment:
+        MONGO_URI: mongodb://mongo_db:27017/loadUp
+        WEB_SOCKET_URL: ws://host.docker.internal:8765
+        PORT: 3000
+      networks:
+        - loadUp-network
+
+  volumes:
+    mongo-data:
+  networks:
+    loadUp-network:
+      driver: bridge

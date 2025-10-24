@@ -1,0 +1,19 @@
+{
+  "name": "LoadUp-app",
+  "version": "1.0.0",
+  "description": "A full-stack, containerized LoadUp application using **Node.js** for the backend and **MongoDB** for data persistence.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker-image": "cd node-service && npm run docker",
+    "docker-compose": "docker-compose up --build",
+    "start": "npm run docker-image && npm run docker-compose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/varun9797/LoadUp.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://github.com/varun9797/LoadUp#readme"
+}
