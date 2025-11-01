@@ -106,6 +106,6 @@ const jobSchema = new Schema<IJob>({
 });
 
 // Create and export the Job model
-export const Job = model<IJob>('Job', jobSchema);
+export const Job = model<IJob>('jobs', jobSchema);
 
 export default Job;

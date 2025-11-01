@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/Loadup';
+const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/loadup';
+console.log('Mongo URI:', mongoUri);
 import logger from './logger';
 
 const connectMongo = () => {
