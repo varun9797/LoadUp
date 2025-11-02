@@ -3,21 +3,21 @@ import { Request, Response, NextFunction } from 'express';
 
 // Question validation schema
 const questionSchema = Joi.object({
-    id: Joi.string().required().messages({
-        'string.empty': 'Question ID is required',
-        'any.required': 'Question ID is required'
-    }),
+    // id: Joi.string().required().messages({
+    //     'string.empty': 'Question ID is required',
+    //     'any.required': 'Question ID is required'
+    // }),
     text: Joi.string().max(500).required().messages({
         'string.empty': 'Question text is required',
         'string.max': 'Question text cannot exceed 500 characters',
         'any.required': 'Question text is required'
     }),
-    type: Joi.string().valid('multiple-choice', 'text', 'boolean', 'rating').required().messages({
+    type: Joi.string().valid('multiple-choice', 'single-choice', 'text', 'boolean', 'rating').required().messages({
         'any.only': 'Question type must be one of: multiple-choice, text, boolean, rating',
         'any.required': 'Question type is required'
     }),
     options: Joi.array().items(Joi.string()).when('type', {
-        is: 'multiple-choice',
+        is: ['multiple-choice', 'single-choice'],
         then: Joi.array().min(2).required().messages({
             'array.min': 'Multiple-choice questions must have at least 2 options',
             'any.required': 'Options are required for multiple-choice questions'
@@ -28,7 +28,16 @@ const questionSchema = Joi.object({
         'number.min': 'Scoring must be a positive number',
         'number.max': 'Scoring cannot exceed 100',
         'any.required': 'Question scoring is required'
+    }),
+    correctAnswer: Joi.alternatives().try(
+        Joi.string(),
+        Joi.boolean(),
+        Joi.number(),
+        Joi.array().items(Joi.string())
+    ).optional().messages({
+        'alternatives.match': 'correctAnswer must be a string, boolean, number, or array of strings'
     })
+
 });
 
 // Create job validation schema

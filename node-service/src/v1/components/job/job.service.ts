@@ -1,4 +1,6 @@
-import Job, { IJob } from "./job.model";
+import Job from "./job.model";
+import { IJob } from "./../../types"
+
 
 class JobService {
 

@@ -1,13 +1,7 @@
-import JobApplication, { IJobApplication, IAnswer } from "./job-application.model";
+import JobApplication from "./job-application.model";
 import Job from "../job/job.model";
-
-interface IApplyJobData {
-    jobId: string;
-    applicantId: string;
-    applicantName: string;
-    applicantEmail: string;
-    answers: IAnswer[];
-}
+import { IQuestion, IJobApplication, IAnswer, IApplyJobData } from "./../../types"
+import logger from "../../../config/logger";
 
 class JobApplicationService {
 
@@ -34,7 +28,6 @@ class JobApplicationService {
 
             // Calculate scores for each answer
             const scoredAnswers = this.calculateAnswerScores(answers, job.questions);
-
             // Calculate total and max possible scores
             const totalScore = scoredAnswers.reduce((sum, answer) => sum + (answer.score || 0), 0);
             const maxPossibleScore = job.questions.reduce((sum, question) => sum + question.scoring, 0);
@@ -57,25 +50,52 @@ class JobApplicationService {
             return savedApplication;
 
         } catch (error) {
+            logger.error('Error in applyForJob:', error);
             throw error;
         }
     }
 
     // Calculate scores for answers based on job questions
-    private calculateAnswerScores(answers: IAnswer[], jobQuestions: any[]): IAnswer[] {
+    private calculateAnswerScores(answers: IAnswer[], jobQuestions: IQuestion[]): IAnswer[] {
         const questionMap = new Map();
         jobQuestions.forEach(q => questionMap.set(q.id, q));
-
         return answers.map(answer => {
-            const question = questionMap.get(answer.questionId);
+            const question: IQuestion = questionMap.get(answer.questionId);
             let score = 0;
-
+            if (!question) {
+                throw new Error("Question not found for the given answer");
+            }
             if (question && answer.answer !== null && answer.answer !== undefined && answer.answer !== '') {
                 // Basic scoring logic - you can enhance this based on question type
                 switch (question.type) {
                     case 'multiple-choice':
                         // Award full points if answered
-                        score = question.scoring;
+                        // score = question.scoring;
+                        score = 0;
+                        let totalCorrectAnwersByCandidate = 0;
+                        let awardedPoints = question.scoring
+
+                        if (Array.isArray(question.correctAnswer) && Array.isArray(answer.answer)) {
+                            answer.answer.forEach((ans) => {
+                                if (Array.isArray(question.correctAnswer)) {
+                                    if (question.correctAnswer.includes(ans)) {
+                                        totalCorrectAnwersByCandidate += 1;
+                                    }
+                                }
+                            })
+
+                            score = awardedPoints * (totalCorrectAnwersByCandidate / question.correctAnswer.length);
+                        } else {
+                            throw new Error("Invalid answer type")
+                        }
+                        break;
+                    case 'single-choice':
+                        // Award full points if answered
+                        // score = question.scoring;
+                        score = 0;
+                        if (typeof answer.answer === 'string' && answer.answer === question.correctAnswer) {
+                            score = question.scoring;
+                        }
                         break;
                     case 'text':
                         // Award points based on text length (basic logic)
@@ -84,7 +104,10 @@ class JobApplicationService {
                         break;
                     case 'boolean':
                         // Award full points if answered
-                        score = question.scoring;
+                        score = 0;
+                        if (typeof answer.answer === 'boolean' && answer.answer === question.correctAnswer) {
+                            question.scoring
+                        }
                         break;
                     case 'rating':
                         // Award points based on rating value
@@ -94,6 +117,7 @@ class JobApplicationService {
                     default:
                         score = question.scoring;
                 }
+                console.log(`Question ID: ${question.id}, Answer: ${answer.answer}, Score: ${score}, type: ${question.type}, question scoring: ${question.scoring}`);
             }
 
             return {
