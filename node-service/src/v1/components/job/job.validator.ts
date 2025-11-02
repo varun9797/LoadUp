@@ -1,6 +1,18 @@
 import Joi from 'joi';
 import { Request, Response, NextFunction } from 'express';
 
+// Range schema for rating type questions
+const rangeSchema = {
+    min: Joi.number().required().messages({
+        'number.base': 'Range min must be a number',
+        'any.required': 'Range min is required'
+    }),
+    max: Joi.number().required().messages({
+        'number.base': 'Range max must be a number',
+        'any.required': 'Range max is required'
+    })
+};
+
 // Question validation schema
 const questionSchema = Joi.object({
     // id: Joi.string().required().messages({
@@ -33,11 +45,11 @@ const questionSchema = Joi.object({
         Joi.string(),
         Joi.boolean(),
         Joi.number(),
+        Joi.object(rangeSchema),
         Joi.array().items(Joi.string())
     ).optional().messages({
-        'alternatives.match': 'correctAnswer must be a string, boolean, number, or array of strings'
+        'alternatives.match': 'correctAnswer must be a string, boolean, number, RangeSchema, or array of strings'
     })
-
 });
 
 // Create job validation schema

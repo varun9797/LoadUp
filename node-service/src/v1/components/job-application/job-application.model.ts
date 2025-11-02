@@ -3,7 +3,7 @@ import { IJobApplication, IAnswer } from "./../../types"
 
 
 // Answer schema for embedded answers
-const answerSchema = new Schema({
+const answerSchema = new Schema<IAnswer>({
     questionId: {
         type: String,
         required: [true, 'Question ID is required'],

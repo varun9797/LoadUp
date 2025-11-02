@@ -1,8 +1,8 @@
 import { Schema, model, Document } from 'mongoose';
-import { IQuestion, IJob } from "./../../types"
+import { IQuestion, IJob, IRange } from "./../../types"
 
 // Question schema for embedded questions
-const questionSchema = new Schema({
+const questionSchema = new Schema<IQuestion>({
     // id: {
     //     type: String,
     //     required: [true, 'Question ID is required'],
@@ -38,17 +38,30 @@ const questionSchema = new Schema({
     correctAnswer: {
         type: Schema.Types.Mixed,
         validate: {
-            validator: function (this: any, value: any) {
+            validator: function (this: IQuestion, value: IQuestion['correctAnswer']) {
                 if (value === null || value === undefined) return true; // Allow undefined or null
                 switch (this.type) {
                     case 'multiple-choice':
-                        return Array.isArray(value) && value.every(v => this.options.includes(v));
+                        // Ensure both value and options are arrays before using includes
+                        if (!Array.isArray(value) || !Array.isArray(this.options)) return false;
+                        return value.every(v => (this.options as string[]).includes(v));
                     case 'single-choice':
-                        return typeof value === 'string' && this.options.includes(value);
+                        // Ensure options is an array before using includes
+                        if (!Array.isArray(this.options)) return false;
+                        return typeof value === 'string' && (this.options as string[]).includes(value);
                     case 'text':
-                        return typeof value === 'string';
+                        return Array.isArray(value); // These are the keywords which we can match with user answer
+                    case 'boolean':
+                        return typeof value === 'boolean';
                     case 'rating':
-                        return typeof value === 'number';
+                        // Accept an IRange-like object { min: number, max: number }
+                        if (typeof value === 'object' && value !== null) {
+                            const maybeRange = value as IRange;
+                            return typeof maybeRange.min === 'number' && typeof maybeRange.max === 'number' && maybeRange.min <= maybeRange.max;
+                        }
+                        return false;
+                    default:
+                        return false;
                 }
             }
         },
@@ -59,7 +72,9 @@ const questionSchema = new Schema({
                 case 'multiple-choice':
                     return 'Multiple-choice correct answer must be an array of strings from the available options';
                 case 'rating':
-                    return 'Rating correct answer must be a number between 1 and 10';
+                    return 'Rating correct answer must be a number between of range given in an object { min, max }';
+                case 'boolean':
+                    return 'Boolean correct answer must be true or false';
                 case 'text':
                     return 'Text correct answer must be a non-empty string';
                 default:

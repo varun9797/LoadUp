@@ -1,7 +1,8 @@
 import JobApplication from "./job-application.model";
 import Job from "../job/job.model";
-import { IQuestion, IJobApplication, IAnswer, IApplyJobData } from "./../../types"
+import { IQuestion, IJobApplication, IAnswer, IApplyJobData, IRange } from "./../../types"
 import logger from "../../../config/logger";
+import { calculateAnswerScores, calculateMatchedkeywordScores } from "../../utils/shared";
 
 class JobApplicationService {
 
@@ -69,50 +70,40 @@ class JobApplicationService {
                 // Basic scoring logic - you can enhance this based on question type
                 switch (question.type) {
                     case 'multiple-choice':
-                        // Award full points if answered
-                        // score = question.scoring;
                         score = 0;
-                        let totalCorrectAnwersByCandidate = 0;
-                        let awardedPoints = question.scoring
-
                         if (Array.isArray(question.correctAnswer) && Array.isArray(answer.answer)) {
-                            answer.answer.forEach((ans) => {
-                                if (Array.isArray(question.correctAnswer)) {
-                                    if (question.correctAnswer.includes(ans)) {
-                                        totalCorrectAnwersByCandidate += 1;
-                                    }
-                                }
-                            })
-
-                            score = awardedPoints * (totalCorrectAnwersByCandidate / question.correctAnswer.length);
+                            score = calculateAnswerScores(question.correctAnswer, answer.answer, question.scoring)
                         } else {
                             throw new Error("Invalid answer type")
                         }
                         break;
                     case 'single-choice':
-                        // Award full points if answered
-                        // score = question.scoring;
                         score = 0;
                         if (typeof answer.answer === 'string' && answer.answer === question.correctAnswer) {
                             score = question.scoring;
                         }
                         break;
                     case 'text':
-                        // Award points based on text length (basic logic)
-                        const textLength = typeof answer.answer === 'string' ? answer.answer.length : 0;
-                        score = textLength > 50 ? question.scoring : Math.floor(question.scoring * 0.5);
+                        if (typeof answer.answer === 'string' && Array.isArray(question.correctAnswer)) {
+                            score = calculateMatchedkeywordScores(answer.answer, question.correctAnswer, question.scoring)
+                        }
                         break;
                     case 'boolean':
-                        // Award full points if answered
                         score = 0;
                         if (typeof answer.answer === 'boolean' && answer.answer === question.correctAnswer) {
-                            question.scoring
+                            score = question.scoring
                         }
                         break;
                     case 'rating':
                         // Award points based on rating value
-                        const rating = typeof answer.answer === 'number' ? answer.answer : 0;
-                        score = Math.floor((rating / 10) * question.scoring);
+                        const correctAnswer = question.correctAnswer as IRange | undefined;
+                        const applicantAnswer = answer.answer as Number | undefined;
+                        if (applicantAnswer &&
+                            correctAnswer &&
+                            applicantAnswer >= correctAnswer.min
+                            && answer.answer <= correctAnswer.max) {
+                            score = question.scoring;
+                        }
                         break;
                     default:
                         score = question.scoring;

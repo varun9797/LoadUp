@@ -7,7 +7,7 @@ export interface IQuestion {
     text: string;
     type: 'multiple-choice' | 'single-choice' | 'text' | 'boolean' | 'rating';
     // How to add correct answer field?
-    correctAnswer?: string | string[] | number | boolean;
+    correctAnswer?: string | string[] | number | boolean | IRange;
     options?: string[];
     scoring: number;
 }
@@ -22,4 +22,9 @@ export interface IJob extends Document {
     questions: IQuestion[];
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface IRange {
+    min: Number,
+    max: Number
 }
