@@ -18,6 +18,7 @@ class JobService {
     // Get all jobs
     async getAllJobs(): Promise<IJob[]> {
         try {
+            // Here we can add logic for filtering, pagination, etc. in the future
             const jobs = await Job.find().sort({ createdAt: -1 });
             return jobs;
         } catch (error) {

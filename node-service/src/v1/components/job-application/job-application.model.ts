@@ -25,7 +25,7 @@ const jobApplicationSchema = new Schema<IJobApplication>({
     jobId: {
         type: Schema.Types.ObjectId,
         required: [true, 'Job ID is required'],
-        ref: 'Job'
+        ref: 'jobs'
     },
     applicantId: {
         type: String,
