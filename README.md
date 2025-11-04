@@ -9,7 +9,7 @@ A comprehensive truck driver job posting and hiring system built with **Node.js*
 - **Backend**: Node.js + Express + TypeScript
 - **Database**: MongoDB + Mongoose
 - **Validation**: Joi
-- **Testing**: Jest + Supertest
+- **Testing**: Jest
 - **DevOps**: Docker, Docker Compose
 - **Architecture**: MVC with Service Layer
 
