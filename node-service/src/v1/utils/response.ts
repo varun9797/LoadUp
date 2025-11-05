@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import logger from '../../config/logger';
 
 export interface ApiResponse<T = any> {
     success: boolean;
@@ -213,6 +214,16 @@ export class ResponseHandler {
         if (error.message === 'You have already applied for this job') {
             return ResponseHandler.conflict(res, error.message);
         }
+
+        if (error.message === 'Invalid answer type') {
+            return ResponseHandler.badRequest(res, error.message);
+        }
+
+        if (error.message === 'Question not found for the given answer') {
+            return ResponseHandler.badRequest(res, error.message);
+        }
+
+        logger.error('Unhandled error:', error);
 
         // Handle generic errors
         return ResponseHandler.error(res, 'Internal server error');

@@ -3,6 +3,7 @@
 import { Request, Response } from "express";
 import jobApplicationService from "./job-application.service";
 import ResponseHandler from "../../utils/response";
+import { IJobApplication } from "./../../types"
 
 class JobApplicationController {
     constructor() { }

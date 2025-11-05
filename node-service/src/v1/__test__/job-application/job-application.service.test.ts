@@ -39,7 +39,7 @@ describe('JobApplicationService', () => {
         {
           id: 'q1',
           text: 'Experience level?',
-          type: 'multiple-choice',
+          type: 'single-choice',
           scoring: 25
         },
         {

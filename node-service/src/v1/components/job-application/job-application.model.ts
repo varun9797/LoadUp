@@ -1,33 +1,9 @@
 import { Schema, model, Document } from 'mongoose';
+import { IJobApplication, IAnswer } from "./../../types"
 
-// Interface for answer
-export interface IAnswer {
-    questionId: string;
-    answer: string | string[] | number | boolean;
-    score?: number;
-}
-
-// Interface for job application
-export interface IJobApplication extends Document {
-    jobId: Schema.Types.ObjectId;
-    applicantId: string;
-    applicantName: string;
-    applicantEmail: string;
-    answers: IAnswer[];
-    totalScore: number;
-    maxPossibleScore: number;
-    scorePercentage: number;
-    status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
-    appliedAt: Date;
-    reviewedAt?: Date;
-    reviewedBy?: string;
-    notes?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 // Answer schema for embedded answers
-const answerSchema = new Schema({
+const answerSchema = new Schema<IAnswer>({
     questionId: {
         type: String,
         required: [true, 'Question ID is required'],
@@ -49,7 +25,7 @@ const jobApplicationSchema = new Schema<IJobApplication>({
     jobId: {
         type: Schema.Types.ObjectId,
         required: [true, 'Job ID is required'],
-        ref: 'Job'
+        ref: 'jobs'
     },
     applicantId: {
         type: String,
@@ -142,42 +118,7 @@ jobApplicationSchema.pre('save', function (next) {
     next();
 });
 
-// Instance methods
-jobApplicationSchema.methods.calculateScore = function () {
-    let totalScore = 0;
-    this.answers.forEach((answer: IAnswer) => {
-        if (answer.score) {
-            totalScore += answer.score;
-        }
-    });
-    this.totalScore = totalScore;
-    return totalScore;
-};
-
-jobApplicationSchema.methods.updateStatus = function (status: string, reviewedBy?: string, notes?: string) {
-    this.status = status;
-    this.reviewedAt = new Date();
-    if (reviewedBy) this.reviewedBy = reviewedBy;
-    if (notes) this.notes = notes;
-    return this.save();
-};
-
-// Static methods
-jobApplicationSchema.statics.getApplicationsByJob = function (jobId: string) {
-    return this.find({ jobId }).sort({ scorePercentage: -1, appliedAt: 1 });
-};
-
-jobApplicationSchema.statics.getTopApplicants = function (jobId: string, limit: number = 10) {
-    return this.find({ jobId })
-        .sort({ scorePercentage: -1, appliedAt: 1 })
-        .limit(limit);
-};
-
-jobApplicationSchema.statics.getApplicationsByStatus = function (jobId: string, status: string) {
-    return this.find({ jobId, status }).sort({ scorePercentage: -1 });
-};
-
 // Create and export the JobApplication model
-export const JobApplication = model<IJobApplication>('JobApplication', jobApplicationSchema);
+export const JobApplication = model<IJobApplication>('job_applications', jobApplicationSchema);
 
 export default JobApplication;
