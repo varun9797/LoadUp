@@ -108,7 +108,6 @@ class JobApplicationService {
                     default:
                         score = question.scoring;
                 }
-                console.log(`Question ID: ${question.id}, Answer: ${answer.answer}, Score: ${score}, type: ${question.type}, question scoring: ${question.scoring}`);
             }
 
             return {
